@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import './Login.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../api/client';
-import './Login.css';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -28,46 +29,96 @@ export default function Login() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login-left">
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h2 className="login-form-title">用户登录</h2>
-          <div className="form-group">
-            <label>用户名</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="请输入用户名"
-              required
-              autoComplete="username"
-            />
-          </div>
-          <div className="form-group">
-            <label>密码</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="请输入密码"
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          {error && <p className="login-error">{error}</p>}
-          <button type="submit" className="btn-login" disabled={loading}>
-            {loading ? '登录中...' : '登 录'}
-          </button>
-          <p className="login-hint">测试账号：admin / 123456</p>
-        </form>
+    <div className="min-h-screen min-h-[100dvh] relative flex items-center justify-center overflow-hidden bg-background">
+      {/* Hero Image + 40% Dark Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src="/home-bg.png"
+          alt=""
+          className="w-full h-full object-cover"
+        />
+        <div
+          className="absolute inset-0 bg-black/40"
+          aria-hidden
+        />
       </div>
-      <div className="login-right">
-        <div className="login-banner">
-          <h1 className="login-banner-title">大地集团智能选房系统</h1>
-          <p className="login-banner-version">系统版本：Vol：1.0</p>
-          <p className="login-banner-desc">推荐IE9.0以上版本Web浏览器，1280*800或更高分辨率</p>
-          <p className="login-banner-tech">技术支持：北京鸿鼎信息技术有限公司</p>
+
+      {/* Centered Glassmorphism Login Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[420px] mx-4"
+      >
+        <div className="login-glass-card">
+          <form onSubmit={handleSubmit} className="login-form-inner">
+            <h2 className="login-title">欢迎登录</h2>
+            <p className="login-subtitle">大地集团智能选房系统</p>
+
+            <div className="mt-8 space-y-6">
+              <div className={`login-input-wrap ${username ? 'has-value' : ''}`}>
+                <input
+                  id="login-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  required
+                  className="login-input"
+                  placeholder=" "
+                />
+                <label htmlFor="login-username" className="login-label">
+                  用户名
+                </label>
+              </div>
+
+              <div className={`login-input-wrap ${password ? 'has-value' : ''}`}>
+                <input
+                  id="login-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  className="login-input"
+                  placeholder=" "
+                />
+                <label htmlFor="login-password" className="login-label">
+                  密码
+                </label>
+              </div>
+            </div>
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-4 text-sm text-red-400 font-medium"
+              >
+                {error}
+              </motion.p>
+            )}
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              className="login-cta"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {loading ? '登录中...' : '登 录'}
+            </motion.button>
+
+            <p className="login-hint">测试账号：admin / 123456</p>
+          </form>
         </div>
+      </motion.div>
+
+      {/* Footer branding */}
+      <div className="absolute bottom-6 left-0 right-0 text-center z-10">
+        <p className="text-white/70 text-xs font-sans">
+          技术支持：北京鸿鼎信息技术有限公司 · 系统版本 Vol.1.0
+        </p>
       </div>
     </div>
   );

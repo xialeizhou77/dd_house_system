@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 
 const colorToRgba = (hex, alpha) => {
-  if (!hex || !hex.startsWith('#')) return `rgba(99, 102, 241, ${alpha})`;
+  if (!hex || !hex.startsWith('#')) return `rgba(197, 160, 89, ${alpha})`;
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
@@ -10,7 +10,7 @@ const colorToRgba = (hex, alpha) => {
 };
 
 /** KPI Sparkline Chart */
-export function SparklineChart({ data, color = '#6366f1', height = 48 }) {
+export function SparklineChart({ data, color = '#C5A059', height = 48 }) {
   const option = useMemo(
     () => ({
       grid: { top: 4, right: 4, bottom: 4, left: 4 },
@@ -52,14 +52,14 @@ export function SparklineChart({ data, color = '#6366f1', height = 48 }) {
   );
 }
 
-/** History Bar Chart - Dark theme with indigo accent */
+/** History Bar Chart - Dark theme with champagne gold accent */
 export function HistoryBarChart({ days, values }) {
   const option = useMemo(
     () => ({
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        backgroundColor: 'rgba(27, 38, 59, 0.95)',
+        borderColor: 'rgba(197, 160, 89, 0.35)',
         textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 24, right: 16, bottom: 40, left: 40 },
@@ -88,9 +88,9 @@ export function HistoryBarChart({ days, values }) {
               x2: 0,
               y2: 0,
               colorStops: [
-                { offset: 0, color: '#1e293b' },
-                { offset: 0.4, color: '#4f46e5' },
-                { offset: 1, color: '#818cf8' },
+                { offset: 0, color: '#1B263B' },
+                { offset: 0.4, color: '#A8863D' },
+                { offset: 1, color: '#C5A059' },
               ],
             },
             borderRadius: [6, 6, 0, 0],
@@ -98,7 +98,7 @@ export function HistoryBarChart({ days, values }) {
           emphasis: {
             itemStyle: {
               shadowBlur: 12,
-              shadowColor: 'rgba(99, 102, 241, 0.5)',
+              shadowColor: 'rgba(197, 160, 89, 0.5)',
             },
           },
         },
@@ -131,8 +131,8 @@ export function VillageRankingChart({ data }) {
           const idx = params[0]?.dataIndex ?? 0;
           return `${labels[idx]}: ${values[idx]} 套`;
         },
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        backgroundColor: 'rgba(27, 38, 59, 0.95)',
+        borderColor: 'rgba(197, 160, 89, 0.35)',
         textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 12, right: 60, bottom: 12, left: 52 },
@@ -161,7 +161,7 @@ export function VillageRankingChart({ data }) {
             itemStyle: {
               color:
                 i < 3
-                  ? ['#6366f1', '#94a3b8', '#a78bfa'][i]
+                  ? ['#C5A059', '#94a3b8', '#D4B876'][i]
                   : {
                       type: 'linear',
                       x: 0,
@@ -203,7 +203,7 @@ export function VillageRankingChart({ data }) {
 }
 
 /** Stacked Bar Chart - Selected / Unselected */
-export function StackedBarChart({ data, colors = ['#6366f1', '#1e293b'] }) {
+export function StackedBarChart({ data, colors = ['#C5A059', '#1B263B'] }) {
   const labels = data?.map((d) => d.label) ?? [];
   const selected = data?.map((d) => d.selected) ?? [];
   const unselected = data?.map((d) => d.unselected) ?? [];
@@ -218,8 +218,8 @@ export function StackedBarChart({ data, colors = ['#6366f1', '#1e293b'] }) {
           const idx = params[0]?.dataIndex ?? 0;
           return `${labels[idx]}: 已选 ${selected[idx]} / 未选 ${unselected[idx]}`;
         },
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(99, 102, 241, 0.3)',
+        backgroundColor: 'rgba(27, 38, 59, 0.95)',
+        borderColor: 'rgba(197, 160, 89, 0.35)',
         textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 12, right: 70, bottom: 12, left: 52 },

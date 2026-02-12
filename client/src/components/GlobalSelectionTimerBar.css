@@ -12,8 +12,8 @@
   align-items: center;
   gap: 0.75rem;
   background: var(--color-dark-bg);
-  border-bottom: 2px solid var(--color-primary);
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+  border-bottom: 2px solid var(--color-secondary);
+  box-shadow: 0 4px 16px rgba(27, 38, 59, 0.2);
   color: var(--color-dark-text);
   font-size: 0.8125rem;
 }
@@ -64,7 +64,7 @@
   margin-left: 0.25rem;
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
-  color: var(--color-primary-200);
+  color: var(--color-secondary);
   letter-spacing: 0.05em;
 }
 
@@ -88,8 +88,8 @@
 .global-timer-progress-inner {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-accent) 50%, var(--color-danger) 100%);
-  box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-secondary) 50%, var(--color-danger) 100%);
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
   transition: width 0.15s linear;
   position: relative;
 }
@@ -165,7 +165,7 @@ body.timer-shake-main-strong .home-main {
   padding: 1.5rem 1.75rem;
   border-radius: var(--radius-lg);
   background: var(--color-dark-bg);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid rgba(197, 160, 89, 0.25);
   box-shadow: var(--shadow-xl);
   text-align: center;
 }
@@ -180,9 +180,10 @@ body.timer-shake-main-strong .home-main {
 }
 
 .global-timer-lock-message .lock-title {
+  font-family: var(--font-serif);
   font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-accent);
+  font-weight: 500;
+  color: var(--color-secondary);
   margin-bottom: 0.5rem;
 }
 
@@ -207,13 +208,13 @@ body.timer-shake-main-strong .home-main {
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 2px 8px rgba(27, 38, 59, 0.25);
 }
 
 .global-timer-lock-btn:hover {
-  background: var(--color-primary-light);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+  background: var(--color-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.35);
 }
 
 .global-timer-lock-btn:active {

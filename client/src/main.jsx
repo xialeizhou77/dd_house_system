@@ -6,6 +6,9 @@ import { SelectionTimerProvider } from './contexts/SelectionTimerContext';
 import App from './App';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/noto-sans-sc';
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/500.css';
+import '@fontsource/playfair-display/600.css';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
