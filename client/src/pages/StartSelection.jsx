@@ -1,7 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/client';
+import { useSelectionTimer } from '../contexts/SelectionTimerContext';
+import { useSelectionData } from '../contexts/SelectionDataContext';
+import { IconSearch } from '../components/Icons';
 import './StartSelection.css';
+
+function fuzzyMatch(text, query) {
+  if (!query.trim()) return false;
+  const lower = String(text || '').toLowerCase();
+  const q = String(query).toLowerCase().trim();
+  return lower.includes(q);
+}
 
 function HouseIcon() {
   return (
@@ -11,40 +20,58 @@ function HouseIcon() {
   );
 }
 
-function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-    </svg>
-  );
-}
-
 export default function StartSelection({ round = 1 }) {
   const navigate = useNavigate();
+  const { startTimer, isLocked } = useSelectionTimer();
+  const { rows } = useSelectionData();
   const [code, setCode] = useState('');
   const [person, setPerson] = useState(null);
-  const [houses, setHouses] = useState([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  async function handleQuery() {
+  const searchResults = useMemo(() => {
+    if (!code.trim()) return [];
+    const roundRows = round === 1
+      ? rows
+      : rows.filter((r) => r.selectionRound === 2);
+    return roundRows.filter(
+      (r) =>
+        fuzzyMatch(r.queryNo, code) ||
+        fuzzyMatch(r.name, code) ||
+        fuzzyMatch(r.idNumber, code) ||
+        fuzzyMatch(r.phone, code),
+    ).slice(0, 10);
+  }, [rows, code, round]);
+
+  function rowToPerson(row) {
+    const statusRound = round === 1 ? row.firstRound : row.secondRound;
+    return {
+      id: row.id,
+      orderNo: row.queryNo,
+      name: row.name,
+      idNumber: row.idNumber,
+      phone: row.phone,
+      status: statusRound === '已选' ? '已选房' : '未选房',
+    };
+  }
+
+  function handleSelectRow(row) {
+    setPerson(rowToPerson(row));
+    setCode(row.queryNo);
+    setShowDropdown(false);
+    setError('');
+  }
+
+  function handleQuery() {
     if (!code.trim()) return;
     setError('');
-    setPerson(null);
-    setLoading(true);
-    try {
-      const { data } = await api.get(`/house/person/${encodeURIComponent(code.trim())}`);
-      setPerson(data);
-      if (data.status === '未选房') {
-        const { data: list } = await api.get('/house/houses/available');
-        setHouses(list);
-      } else {
-        setHouses([]);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || '查询失败');
-    } finally {
-      setLoading(false);
+    if (searchResults.length === 1) {
+      handleSelectRow(searchResults[0]);
+    } else if (searchResults.length > 1) {
+      setShowDropdown(true);
+    } else {
+      setPerson(null);
+      setError('未找到匹配的候选人');
     }
   }
 
@@ -52,39 +79,68 @@ export default function StartSelection({ round = 1 }) {
     setCode('');
     setPerson(null);
     setError('');
+    setShowDropdown(false);
   }
 
   function handleStartSelection() {
-    if (!person || person.status === '已选房') return;
-    const sizes = houses.length > 0
-      ? [...new Set(houses.map(h => h.area))].sort((a, b) => a - b)
-      : [];
+    if (!person || person.status === '已选房' || isLocked) return;
+    // 开始选房时启动 3 分钟全局倒计时
+    startTimer();
+    const sizes = [80, 100, 120];
     navigate(`/house-selection/round${round}/building`, {
       state: { person, availableSizes: sizes },
     });
   }
 
-  const availableSizes = person?.status === '未选房' && houses.length > 0
-    ? [...new Set(houses.map(h => h.area))].sort((a, b) => a - b)
-    : [];
+  const availableSizes = person?.status === '未选房' ? [80, 100, 120] : [];
 
   return (
     <div className="start-selection">
       <h3 className="page-title">第{round}轮选房 - 开始选房</h3>
 
       <div className="query-section">
-        <div className="query-input-group">
+        <div className="query-input-group query-input-with-dropdown">
           <label>输入编号</label>
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="请输入选房序号/身份证/手机号"
-            onKeyDown={(e) => e.key === 'Enter' && handleQuery()}
-          />
+          <div className="input-wrapper">
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => {
+                setCode(e.target.value);
+                setShowDropdown(true);
+                setPerson(null);
+              }}
+              onFocus={() => code.trim() && setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              placeholder="请输入选房序号/姓名/身份证/手机号（支持模糊查询）"
+              onKeyDown={(e) => e.key === 'Enter' && handleQuery()}
+            />
+            {showDropdown && searchResults.length > 0 && (
+              <ul className="search-dropdown">
+                {searchResults.map((row) => (
+                  <li
+                    key={row.id}
+                    className="search-dropdown-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectRow(row);
+                    }}
+                  >
+                    <span className="search-no">{row.queryNo}</span>
+                    <span className="search-name">{row.name}</span>
+                    <span className="search-meta">{row.village}</span>
+                    <span className={`search-status ${round === 1 ? row.firstRound : row.secondRound}`}>
+                      {round === 1 ? row.firstRound : row.secondRound}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-        <button className="btn-query" onClick={handleQuery} disabled={loading}>
-          {loading ? '查询中...' : '查询'}
+        <button className="btn-query btn-query-icon" onClick={handleQuery} disabled={isLocked}>
+          <IconSearch />
+          查询
         </button>
       </div>
 
@@ -101,7 +157,7 @@ export default function StartSelection({ round = 1 }) {
                 <span className="query-info-value">{person.orderNo || person.id}</span>
               </div>
               <div className="query-info-row">
-                <span className="query-info-label">被腾退人:</span>
+                <span className="query-info-label">选房人:</span>
                 <span className="query-info-value">{person.name}</span>
               </div>
               <div className="query-info-row">
@@ -124,13 +180,13 @@ export default function StartSelection({ round = 1 }) {
               <button
                 className="btn-start-selection"
                 onClick={handleStartSelection}
-                disabled={person.status === '已选房'}
+                disabled={person.status === '已选房' || isLocked}
               >
                 <HouseIcon />
                 开始选房
               </button>
               <button className="btn-re-query" onClick={handleReset}>
-                <SearchIcon />
+                <IconSearch />
                 重新查询
               </button>
             </div>

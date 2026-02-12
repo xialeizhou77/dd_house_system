@@ -8,6 +8,8 @@ import BuildingPage from './pages/BuildingPage';
 import AnnotatePage from './pages/AnnotatePage';
 import UnselectedList from './pages/UnselectedList';
 import AllList from './pages/AllList';
+import SelectionManage from './pages/SelectionManage';
+import { SelectionDataProvider } from './contexts/SelectionDataContext';
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
@@ -28,8 +30,9 @@ function App() {
         }
       >
         <Route path="annotate" element={<AnnotatePage />} />
-        <Route path="house-selection" element={<HouseSelection />}>
-          <Route index element={<Navigate to="round1/start" replace />} />
+        <Route path="house-selection" element={<SelectionDataProvider><HouseSelection /></SelectionDataProvider>}>
+          <Route index element={<Navigate to="manage" replace />} />
+          <Route path="manage" element={<SelectionManage />} />
           <Route path="round1/start" element={<StartSelection round={1} />} />
           <Route path="round1/building" element={<BuildingPage round={1} />} />
           <Route path="round1/unselected" element={<UnselectedList round={1} />} />

@@ -1,29 +1,43 @@
-import { useEffect, useState } from 'react';
-import api from '../api/client';
+import { useMemo } from 'react';
+import { useSelectionData } from '../contexts/SelectionDataContext';
 import './List.css';
 
 export default function UnselectedList({ round = 1 }) {
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { rows } = useSelectionData();
 
-  useEffect(() => {
-    api.get('/house/persons/unselected')
-      .then(({ data }) => setList(data))
-      .catch(() => setList([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const list = useMemo(() => {
+    if (round === 1) {
+      return rows
+        .filter((r) => r.firstRound === '未选')
+        .map((r) => ({
+          id: r.id,
+          orderNo: r.queryNo,
+          name: r.name,
+          idNumber: r.idNumber,
+          phone: r.phone,
+          status: '未选房',
+        }));
+    }
+    return rows
+      .filter((r) => r.selectionRound === 2 && r.secondRound === '未选')
+      .map((r) => ({
+        id: r.id,
+        orderNo: r.queryNo,
+        name: r.name,
+        idNumber: r.idNumber,
+        phone: r.phone,
+        status: '未选房',
+      }));
+  }, [rows, round]);
 
   return (
     <div className="list-page">
       <h3 className="page-title">第{round}轮选房 - 未选房列表</h3>
-      {loading ? (
-        <p className="loading-msg">加载中...</p>
-      ) : (
-        <div className="table-wrap">
+      <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>编号</th>
+                <th>选房序号</th>
                 <th>姓名</th>
                 <th>身份证号</th>
                 <th>联系电话</th>
@@ -36,7 +50,7 @@ export default function UnselectedList({ round = 1 }) {
               ) : (
                 list.map((row) => (
                   <tr key={row.id}>
-                    <td>{row.id}</td>
+                    <td>{row.orderNo}</td>
                     <td>{row.name}</td>
                     <td>{row.idNumber}</td>
                     <td>{row.phone}</td>
@@ -46,8 +60,8 @@ export default function UnselectedList({ round = 1 }) {
               )}
             </tbody>
           </table>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
+

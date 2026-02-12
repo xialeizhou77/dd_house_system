@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { IconArrowLeft, IconCheck } from '../components/Icons';
 import '../styles/AerialMap.css';
 import './AnnotatePage.css';
 
@@ -125,10 +126,12 @@ export default function AnnotatePage() {
 
         <div className="annotate-map-wrap annotate-content-right">
           <div className="aerial-toolbar aerial-toolbar-shared">
-            <button type="button" className="btn-back" onClick={() => navigate(-1)}>
+            <button type="button" className="btn-back btn-with-icon" onClick={() => navigate(-1)}>
+              <IconArrowLeft />
               返回
             </button>
-            <button type="button" className="btn-save" onClick={handleSave} disabled={saving}>
+            <button type="button" className="btn-save btn-with-icon" onClick={handleSave} disabled={saving}>
+              <IconCheck />
               {saving ? '保存中...' : '保存到配置文件'}
             </button>
           </div>
@@ -186,7 +189,8 @@ export default function AnnotatePage() {
                 <button type="button" className="btn-cancel" onClick={() => { setPending(null); setPendingLabel(''); }}>
                   取消
                 </button>
-                <button type="button" className="btn-confirm" onClick={handleConfirmAdd}>
+                <button type="button" className="btn-confirm btn-with-icon" onClick={handleConfirmAdd}>
+                  <IconCheck />
                   确定
                 </button>
               </div>

@@ -1,8 +1,24 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/client';
+import { IconArrowLeft } from '../components/Icons';
+import { useSelectionData } from '../contexts/SelectionDataContext';
+import { useSelectionTimer } from '../contexts/SelectionTimerContext';
 import '../styles/AerialMap.css';
 import './BuildingPage.css';
+
+const UNITS_PER_BUILDING = 44;
+
+function getHeatmapColor(selected, unselected) {
+  const total = selected + unselected || 1;
+  const ratio = selected / total;
+  if (ratio <= 0) return { r: 34, g: 197, b: 94 };
+  if (ratio >= 1) return { r: 239, g: 68, b: 68 };
+  const r = Math.round(34 + (239 - 34) * ratio);
+  const g = Math.round(197 - (197 - 68) * ratio);
+  const b = Math.round(94 + (68 - 94) * ratio);
+  return { r, g, b };
+}
 
 const PROJECT_TITLE = '密云区水库防灾减灾及蓄水能力提升项目农宅腾退安置选房';
 
@@ -23,54 +39,112 @@ function parseUniqueId(id, fallbackZone, fallbackLabel) {
   return { districtName: zone, district: zone === '西区' ? 'west' : 'east', buildingNum: parseInt(fallbackLabel, 10) };
 }
 
-function enrichCoords(raw) {
+function enrichCoords(raw, buildingStats) {
   if (!Array.isArray(raw) || raw.length === 0) return [];
-  return raw.map((b, i) => {
+  return raw.map((b) => {
     const parsed = parseUniqueId(b.id, b.zone, b.label);
+    const stats = buildingStats[b.id] || { selected: 0, unselected: UNITS_PER_BUILDING };
     return {
       ...b,
       ...parsed,
-      remaining: [44, 44, 22, 38, 32, 66, 44, 44, 18, 44, 28, 36][i % 12] || 40,
+      selected: stats.selected,
+      unselected: stats.unselected,
+      remaining: stats.unselected,
     };
   });
 }
 
-// 楼栋楼层单元数据 - 11层 2单元 东西户
+// 楼栋楼层单元数据 - 11层 2单元 东西户（mock 数据）
+// 使用简单规则填满楼盘表：绿色为可选户型（available），红色为已选（sold，不可点击）
 function generateFloorUnits() {
   const units = [];
+
+  const createCell = (floor, code, sizeHint, unit) => {
+    const hash = floor * 10 + parseInt(code.slice(-1), 10);
+    const status = hash % 3 === 0 ? 'sold' : 'available';
+    return {
+      code,
+      size: sizeHint,
+      status, // 'available' | 'sold'
+      unit,
+    };
+  };
+
   for (let floor = 1; floor <= 11; floor++) {
-    const unit1East = `${floor}01`;
+    const unit2West = createCell(floor, `${floor}01`, 80, 2);
+    const unit2East = createCell(floor, `${floor}02`, 100, 2);
+    const unit1West = createCell(floor, `${floor}03`, 100, 1);
+    const unit1East = createCell(floor, `${floor}04`, 120, 1);
+
     units.push({
       floor,
-      unit2West: null,
-      unit2East: null,
-      unit1West: null,
+      unit2West,
+      unit2East,
+      unit1West,
       unit1East,
     });
   }
   return units;
 }
 
+// mock 户型图数据（请按需替换为真实图片）
+const FLOORPLAN_BY_SIZE = {
+  80: { area: 80, name: '80㎡ 两居', image: '/floorplans/80m2.png' },
+  100: { area: 100, name: '100㎡ 三居', image: '/floorplans/100m2.png' },
+  120: { area: 120, name: '120㎡ 三居', image: '/floorplans/120m2.png' },
+};
+
 export default function BuildingPage({ round = 1 }) {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { rows, setRows } = useSelectionData();
+  const { finishTimer } = useSelectionTimer();
   const person = state?.person;
-  const [buildings, setBuildings] = useState([]);
+  const [rawCoords, setRawCoords] = useState([]);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+  const [countdown, setCountdown] = useState(null);
 
-  const loadCoords = useCallback(async () => {
-    try {
-      const { data } = await api.get('/building-coords');
-      setBuildings(enrichCoords(data));
-    } catch {
-      setBuildings([]);
-    }
+  const buildingStats = useMemo(() => {
+    const stats = {};
+    rows.forEach((r) => {
+      const isSelected = r.firstRound === '已选' || r.secondRound === '已选';
+      if (!isSelected) return;
+      const key = (r.已选区 != null && r.已选楼号 != null && r.已选区 !== '' && r.已选楼号 !== '')
+        ? `${r.已选区}_${r.已选楼号}`
+        : r.buildingKey;
+      if (!key) return;
+      if (!stats[key]) stats[key] = { selected: 0 };
+      stats[key].selected += 1;
+    });
+    Object.keys(stats).forEach((key) => {
+      stats[key].unselected = Math.max(0, UNITS_PER_BUILDING - stats[key].selected);
+    });
+    return stats;
+  }, [rows]);
+
+  const buildings = useMemo(
+    () => enrichCoords(rawCoords, buildingStats),
+    [rawCoords, buildingStats],
+  );
+
+  useEffect(() => {
+    api.get('/building-coords')
+      .then(({ data }) => setRawCoords(data || []))
+      .catch(() => setRawCoords([]));
   }, []);
 
   useEffect(() => {
-    loadCoords();
-  }, [loadCoords]);
+    if (!selectionConfirmed || countdown === null) return;
+    if (countdown <= 0) {
+      navigate(`/house-selection`);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [selectionConfirmed, countdown, navigate]);
 
   if (!person) {
     navigate(`/house-selection/round${round}/start`, { replace: true });
@@ -78,33 +152,88 @@ export default function BuildingPage({ round = 1 }) {
   }
 
   const orderNo = person.orderNo || person.id || '0000';
-  const availableSizes = state?.availableSizes || [87, 80];
+  const availableSizes = state?.availableSizes || [80, 100, 120];
   const requiredCounts = availableSizes.map(s => ({ size: s, count: 1 }));
   const blockName = 'A块';
   const totalRemaining = 372;
+  const availableSizesText = availableSizes.length
+    ? [...availableSizes].sort((a, b) => a - b).map((s) => `${s}平方米`).join('、')
+    : '—';
+
+  const areaRemaining = useMemo(() => {
+    const west = buildings.filter((b) => b.districtName === '西区');
+    const east = buildings.filter((b) => b.districtName === '东区');
+    return [
+      { name: '西区', total: west.reduce((s, b) => s + (b.remaining ?? b.unselected ?? UNITS_PER_BUILDING), 0) },
+      { name: '东区', total: east.reduce((s, b) => s + (b.remaining ?? b.unselected ?? UNITS_PER_BUILDING), 0) },
+    ];
+  }, [buildings]);
 
   function handleReturn() {
     navigate(`/house-selection/round${round}/start`);
   }
 
   function handleBuildingClick(building) {
-    console.log('Building clicked:', { id: building.id, zone: building.zone, label: building.label });
+    if (selectionConfirmed) return;
     setSelectedBuilding(building);
     setSelectedUnit(null);
   }
 
   function handleBackToAerial() {
+    if (selectionConfirmed) return;
     setSelectedBuilding(null);
     setSelectedUnit(null);
+    setShowConfirm(false);
   }
 
   const floorUnits = selectedBuilding ? generateFloorUnits() : [];
+  const selectedPlan = selectedUnit ? FLOORPLAN_BY_SIZE[selectedUnit.size] || null : null;
+
+  const selectedFloor = selectedUnit ? parseInt(String(selectedUnit.code).slice(0, -2), 10) || null : null;
+  const confirmCommunity = selectedBuilding
+    ? (selectedBuilding.district === 'west' ? '李各庄路11号院' : '李各庄路8号院')
+    : '';
+
+  function handleSubmit() {
+    if (!selectedUnit || !selectedBuilding || selectionConfirmed) return;
+    setShowConfirm(true);
+  }
+
+  function handleConfirmSelection() {
+    finishTimer();
+    if (selectedBuilding && selectedUnit && person) {
+      const buildingNum = selectedBuilding.buildingNum || selectedBuilding.label;
+      const districtName = selectedBuilding.districtName || (selectedBuilding.district === 'west' ? '西区' : '东区');
+      const unitNum = selectedUnit.unit || 1;
+      const roomCode = selectedUnit.code || '';
+      const selectedUnitDisplay = `${districtName}${buildingNum}号楼 ${unitNum}单元 ${roomCode}`;
+      const buildingKey = `${districtName}_${buildingNum}`;
+
+      setRows((prev) =>
+        prev.map((r) => {
+          if (r.queryNo !== String(person.orderNo || person.id)) return r;
+          return {
+            ...r,
+            已选房源: selectedUnitDisplay,
+            已选区: districtName,
+            已选楼号: String(buildingNum),
+            buildingKey,
+            ...(round === 1 ? { firstRound: '已选' } : { secondRound: '已选' }),
+          };
+        }),
+      );
+    }
+    setShowConfirm(false);
+    setSelectionConfirmed(true);
+    setCountdown(5);
+  }
+
+  const isDisabled = selectionConfirmed;
 
   return (
-    <div className="building-page">
+    <div className={`building-page ${isDisabled ? 'building-page--disabled' : ''}`}>
       <header className="building-header">
         <h1 className="building-title">{PROJECT_TITLE}</h1>
-        <button className="btn-end">结束选</button>
       </header>
 
       <div className="building-main">
@@ -114,19 +243,27 @@ export default function BuildingPage({ round = 1 }) {
             <span className="label">总剩余房源</span>
             <span className="value">{selectedBuilding ? buildings.find(b => b.id === selectedBuilding.id)?.remaining || 0 : totalRemaining}套</span>
           </div>
-          <div className="sidebar-nav">
-            <span>&gt;&gt;&gt;</span>
+          <div className="sidebar-areas">
+            <span className="label">各区剩余房源</span>
+            <div className="sidebar-area-list">
+              {areaRemaining.map(({ name, total }) => (
+                <div key={name} className="sidebar-area-row">
+                  <span className="area-name">{name}</span>
+                  <span className="area-value">{total}套</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="sidebar-person">
-            <div className="sidebar-row">
-              <span className="label">选房序号:</span>
-              <span className="value">{orderNo}</span>
+              <div className="sidebar-row">
+                <span className="label">选房序号:</span>
+                <span className="value">{orderNo}</span>
+              </div>
+              <div className="sidebar-row">
+                <span className="label">选房人:</span>
+                <span className="value">{person.name}</span>
+              </div>
             </div>
-            <div className="sidebar-row">
-              <span className="label">被拆迁人:</span>
-              <span className="value">{person.name}</span>
-            </div>
-          </div>
           <div className="round-section">
             <h4>【第{round}轮选房】</h4>
             <table className="unit-table">
@@ -165,38 +302,72 @@ export default function BuildingPage({ round = 1 }) {
           {!selectedBuilding ? (
             <>
               <div className="aerial-toolbar aerial-toolbar-shared">
-                <button className="btn-back-block">返回地块</button>
+                <div className="aerial-user-scroll">
+                  <div className="aerial-user-scroll-text">
+                    选房序号：{orderNo}
+                    <span className="divider">｜</span>
+                    选房人：{person.name}
+                    <span className="divider">｜</span>
+                    可选户型：{availableSizesText}
+                  </div>
+                </div>
                 <div className="aerial-search">
                   <input type="text" value={orderNo} readOnly className="search-input" />
                   <span className="search-label">号</span>
-                  <button className="btn-return" onClick={handleReturn}>Q返回</button>
+                  <button className="btn-return btn-return-icon" onClick={handleReturn}>
+                  <IconArrowLeft />
+                  返回
+                </button>
                 </div>
               </div>
               <div className="aerial-view aerial-map-area">
                 <div className="aerial-map aerial-map-container aerial-map-container--flex">
-                  {buildings.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      className={`aerial-building aerial-building--${b.zone.toLowerCase()}`}
-                      style={{
-                        left: b.left,
-                        top: b.top,
-                      }}
-                      onClick={() => handleBuildingClick(b)}
-                      title={`${b.districtName}${b.buildingNum}号楼 剩余${b.remaining}套`}
-                    >
-                      {b.districtName === '西区' ? `西${b.label}` : `东${b.label}`}
-                    </button>
-                  ))}
+                  {buildings.map((b) => {
+                    const selected = b.selected ?? 0;
+                    const unselected = b.unselected ?? UNITS_PER_BUILDING;
+                    const rgb = getHeatmapColor(selected, unselected);
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        className="aerial-building aerial-building-heatmap"
+                        style={{
+                          left: b.left,
+                          top: b.top,
+                          '--heatmap-r': rgb.r,
+                          '--heatmap-g': rgb.g,
+                          '--heatmap-b': rgb.b,
+                        }}
+                        onClick={() => handleBuildingClick(b)}
+                        disabled={isDisabled}
+                        title={`${b.districtName}${b.buildingNum}号楼 已选${selected} 未选${unselected}`}
+                      >
+                        <span className="aerial-building-label">{b.districtName === '西区' ? `西${b.label}` : `东${b.label}`}</span>
+                        <span className="aerial-building-stats">{selected}/{unselected}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </>
           ) : (
             <div className="building-detail">
               <div className="building-detail-header">
-                <span className="detail-label">楼盘表</span>
-                <h3 className="detail-title">{selectedBuilding.districtName}({selectedBuilding.district === 'west' ? '李各庄路11号院' : '李各庄路8号院'})地块: {selectedBuilding.buildingNum || selectedBuilding.label}号楼</h3>
+                <div className="detail-header-left">
+                  <span className="detail-label">楼盘表</span>
+                  <h3 className="detail-title">{selectedBuilding.districtName}({selectedBuilding.district === 'west' ? '李各庄路11号院' : '李各庄路8号院'})地块: {selectedBuilding.buildingNum || selectedBuilding.label}号楼</h3>
+                </div>
+                <button
+                  className="btn-close-top"
+                  onClick={handleBackToAerial}
+                  disabled={isDisabled}
+                  title="关闭"
+                  aria-label="关闭"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
               <div className="building-detail-main">
                 <div className="floor-unit-grid">
@@ -218,48 +389,155 @@ export default function BuildingPage({ round = 1 }) {
                       {floorUnits.map((row) => (
                         <tr key={row.floor}>
                           <td className="floor-col">{row.floor}</td>
-                          <td className={selectedUnit === `2西${row.floor}` ? 'selected' : ''}>{row.unit2West || ''}</td>
-                          <td className={selectedUnit === `2东${row.floor}` ? 'selected' : ''}>{row.unit2East || ''}</td>
-                          <td className={selectedUnit === `1西${row.floor}` ? 'selected' : ''}>{row.unit1West || ''}</td>
-                          <td
-                            className={`unit-cell ${selectedUnit === row.unit1East ? 'selected' : ''} ${row.unit1East ? 'clickable' : ''}`}
-                            onClick={() => row.unit1East && setSelectedUnit(row.unit1East)}
-                          >
-                            {row.unit1East || ''}
-                          </td>
+                          {['unit2West', 'unit2East', 'unit1West', 'unit1East'].map((key) => {
+                            const cell = row[key];
+                            const isAvailable = cell && cell.status === 'available' && !isDisabled;
+                            const isSelectedCell = selectedUnit && cell && selectedUnit.code === cell.code;
+                            const className = [
+                              'unit-cell',
+                              cell ? `unit-cell--${cell.status}` : '',
+                              isAvailable ? 'clickable' : '',
+                              isSelectedCell ? 'selected' : '',
+                            ].filter(Boolean).join(' ');
+                            return (
+                              <td
+                                key={key}
+                                className={className}
+                                onClick={() => {
+                                  if (isAvailable) setSelectedUnit(cell);
+                                }}
+                              >
+                                {cell?.code || ''}
+                              </td>
+                            );
+                          })}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
                 <div className="building-info-panel">
-                  <div className="info-row">
-                    <span className="info-label">选房序号:</span>
-                    <span className="info-value">{orderNo}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">被拆迁人:</span>
-                    <span className="info-value">{person.name}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">所选户型:</span>
-                    <span className="info-value">{selectedUnit ? `${selectedUnit}室` : '户型名称'}</span>
+                  <div className="floorplan-panel">
+                    <h4 className="floorplan-title">户型图</h4>
+                    {selectedPlan ? (
+                      <div className="floorplan-single">
+                        <div className="floorplan-meta">
+                          <span className="floorplan-name">{selectedPlan.name}</span>
+                        </div>
+                        <div className="floorplan-image-wrap floorplan-image-wrap--large">
+                          <img src={selectedPlan.image} alt={selectedPlan.name} />
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="floorplan-placeholder">请在左侧选择一个房号查看对应户型图</p>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="building-detail-footer">
-                <button className="btn-reselect" onClick={handleBackToAerial}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                <button
+                  className="btn-submit"
+                  onClick={handleSubmit}
+                  disabled={!selectedUnit || isDisabled}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
                   </svg>
-                  重新选楼
+                  提交选中
                 </button>
-                <button className="btn-return-top" onClick={handleReturn}>Q返回</button>
               </div>
             </div>
           )}
         </div>
       </div>
+      {isDisabled && countdown !== null && (
+        <div className="countdown-overlay">
+          <div className="countdown-box">
+            <div className="countdown-number">{countdown}</div>
+            <div className="countdown-unit">秒</div>
+            <div className="countdown-text">选房成功，将自动返回智能选房</div>
+          </div>
+        </div>
+      )}
+      {showConfirm && selectedBuilding && selectedUnit && (
+        <div className="confirm-modal-overlay">
+          <div className="confirm-modal">
+            <div className="confirm-modal-header">
+              <h3 className="confirm-title">确认选房</h3>
+              <button
+                type="button"
+                className="confirm-modal-close"
+                onClick={() => setShowConfirm(false)}
+                title="关闭"
+                aria-label="关闭"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="confirm-main">
+              <div className="confirm-info">
+                <div className="confirm-row">
+                  <span className="label">选房人</span>
+                  <span className="value">{person.name}</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">房屋权利人</span>
+                  <span className="value">—</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">小区</span>
+                  <span className="value">{confirmCommunity}</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">楼号</span>
+                  <span className="value">{selectedBuilding.buildingNum || selectedBuilding.label}</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">单元号</span>
+                  <span className="value">{selectedUnit.unit || '1'}</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">房号</span>
+                  <span className="value">{selectedUnit.code}</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">户型</span>
+                  <span className="value">{selectedUnit.size}平方米</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">选房协议面积</span>
+                  <span className="value">—</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">总楼层</span>
+                  <span className="value">11</span>
+                </div>
+                <div className="confirm-row">
+                  <span className="label">所在层</span>
+                  <span className="value">{selectedFloor ?? '—'}</span>
+                </div>
+              </div>
+              <div className="confirm-plan">
+                {selectedPlan && (
+                  <div className="confirm-plan-wrap">
+                    <img src={selectedPlan.image} alt={selectedPlan.name} />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="confirm-actions">
+              <button
+                className="btn-confirm"
+                onClick={handleConfirmSelection}
+              >
+                确认选房
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

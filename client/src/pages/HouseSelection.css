@@ -51,6 +51,20 @@
   transition: background 0.2s;
 }
 
+.tree-node-icon,
+.tree-leaf-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.tree-leaf.active .tree-leaf-icon {
+  opacity: 1;
+}
+
 .tree-node-label:hover,
 .tree-leaf:hover {
   background: rgba(26, 95, 74, 0.06);

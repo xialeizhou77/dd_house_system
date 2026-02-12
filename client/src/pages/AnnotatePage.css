@@ -54,6 +54,12 @@
   opacity: 0.7;
 }
 
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .annotate-main {
   flex: 1;
   display: flex;
