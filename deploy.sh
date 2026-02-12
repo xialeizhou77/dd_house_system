@@ -1,16 +1,14 @@
 #!/bin/sh
 # 智能选房系统 - 完整部署/重启脚本
-# 用法：sh deploy.sh  或  ./deploy.sh
+# 用法：在项目根目录下执行  sh deploy.sh  或  ./deploy.sh
 
 set -e
 
 # ========== 可配置项 ==========
-PROJECT_DIR="${PROJECT_DIR:-dd_house_system}"   # 项目目录，可改为绝对路径如 /opt/houseSystem
 APP_NAME="house-system"
 PORT="${PORT:-3001}"
 
-# ========== 执行 ==========
-cd "$PROJECT_DIR" || { echo "错误: 无法进入目录 $PROJECT_DIR"; exit 1; }
+# ========== 执行（在当前目录） ==========
 
 echo ">>> 安装依赖..."
 npm run install:all
