@@ -7,13 +7,14 @@
   height: 100%;
 }
 
-/* ---- Header Toolbar ---- */
+/* ---- Header Toolbar (mobile: stacked/wrap) ---- */
 .selection-manage-header {
   flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   background: var(--color-bg);
   border-radius: var(--radius) var(--radius) 0 0;
   border: 1px solid var(--color-border);
@@ -21,21 +22,46 @@
 }
 
 .header-label {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .header-input {
-  width: 160px;
-  padding: 0.375rem 0.625rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 120px;
+  padding: 0.5rem 0.625rem;
+  min-height: var(--touch-target-sm);
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--color-border);
-  font-size: 0.8125rem;
+  font-size: 16px; /* Prevents iOS zoom */
   color: var(--color-text);
   background: var(--color-card);
   transition: all var(--transition);
+}
+
+@media (min-width: 480px) {
+  .header-input {
+    width: 140px;
+    max-width: 160px;
+  }
+}
+
+@media (min-width: 768px) {
+  .selection-manage-header {
+    padding: 0.75rem 1rem;
+  }
+  .header-label {
+    font-size: 0.8125rem;
+  }
+  .header-input {
+    width: 160px;
+    padding: 0.375rem 0.625rem;
+    min-height: auto;
+    font-size: 0.8125rem;
+  }
 }
 
 .header-input::placeholder {
@@ -49,7 +75,8 @@
 
 .header-btn {
   margin-left: 0.25rem;
-  padding: 0.375rem 0.875rem;
+  padding: 0.5rem 0.875rem;
+  min-height: var(--touch-target-sm);
   border-radius: var(--radius-sm);
   border: none;
   background: var(--color-primary);
@@ -58,6 +85,9 @@
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-btn:hover {
@@ -90,13 +120,16 @@
   background: var(--color-card);
   border-radius: 0 0 var(--radius) var(--radius);
   border: 1px solid var(--color-border);
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .selection-manage-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .selection-manage-table thead {
@@ -106,11 +139,11 @@
 }
 
 .selection-manage-table th {
-  padding: 0.625rem 0.75rem;
+  padding: 0.5rem 0.5rem;
   background: var(--color-dark-bg);
   color: var(--color-dark-text);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 2px solid var(--color-primary);
@@ -119,11 +152,25 @@
 }
 
 .selection-manage-table td {
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   border-bottom: 1px solid var(--color-border-light);
   text-align: center;
   white-space: nowrap;
   color: var(--color-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .selection-manage-table {
+    font-size: 0.8125rem;
+    min-width: 100%;
+  }
+  .selection-manage-table th {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  .selection-manage-table td {
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 .selection-manage-table tbody tr {
@@ -146,15 +193,17 @@
 .selection-pagination {
   flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin-top: 0.75rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .pager-btn {
-  padding: 0.3rem 0.875rem;
+  padding: 0.5rem 0.875rem;
+  min-height: var(--touch-target-sm);
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--color-border);
   background: var(--color-card);
@@ -162,6 +211,17 @@
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+}
+
+@media (min-width: 768px) {
+  .selection-pagination {
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .pager-btn {
+    padding: 0.3rem 0.875rem;
+    min-height: auto;
+  }
 }
 
 .pager-btn:hover:not(:disabled) {
@@ -255,13 +315,31 @@
 }
 
 .selection-view-modal {
-  width: 460px;
-  max-width: 90vw;
+  width: calc(100vw - 2rem);
+  max-width: 460px;
+  margin: 1rem;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
   background: var(--color-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
-  padding: 1.5rem 1.75rem 1.25rem;
+  padding: 1.25rem 1.25rem 1rem;
   border: 1px solid var(--color-border);
+}
+
+@media (min-width: 480px) {
+  .selection-view-modal {
+    width: 90vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .selection-view-modal {
+    width: 460px;
+    margin: 0;
+    padding: 1.5rem 1.75rem 1.25rem;
+  }
 }
 
 .selection-view-modal h3 {

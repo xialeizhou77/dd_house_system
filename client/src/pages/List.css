@@ -1,26 +1,35 @@
 /* ============================================
-   Shared List / Table Styles
+   Shared List / Table Styles - Mobile First
    ============================================ */
 .list-page {
+  width: 100%;
   max-width: 900px;
 }
 
 .list-page .page-title {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: var(--color-text);
   letter-spacing: -0.01em;
 }
 
+@media (min-width: 768px) {
+  .list-page .page-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
 .loading-msg {
   color: var(--color-text-muted);
-  padding: 2rem;
-  font-size: 0.875rem;
+  padding: 1.5rem;
+  font-size: 0.8125rem;
 }
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
   background: var(--color-card);
@@ -28,26 +37,41 @@
 
 .data-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .data-table th {
   background: var(--color-dark-bg);
   color: var(--color-dark-text);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 2px solid var(--color-primary);
 }
 
 .data-table td {
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .data-table {
+    font-size: 0.8125rem;
+    min-width: 100%;
+  }
+  .data-table th {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+  }
+  .data-table td {
+    padding: 0.625rem 1rem;
+  }
 }
 
 .data-table tbody tr {

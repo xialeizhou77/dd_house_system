@@ -8,12 +8,21 @@
 .aerial-toolbar-shared {
   flex-shrink: 0;
   min-height: 40px;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.75rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   background: rgba(0, 0, 0, 0.25);
   border-bottom: 1px solid var(--color-dark-border);
+}
+
+@media (min-width: 768px) {
+  .aerial-toolbar-shared {
+    padding: 0.5rem 1rem;
+    flex-wrap: nowrap;
+  }
 }
 
 /* Map area shell - fills remaining height */
