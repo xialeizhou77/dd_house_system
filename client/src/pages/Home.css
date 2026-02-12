@@ -1,0 +1,128 @@
+.home-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  flex: 0 0 10%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.home-header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.btn-logout {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.home-menu {
+  flex: 0 0 10%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+  background: var(--color-card);
+  border-bottom: 1px solid #eee;
+}
+
+.menu-item {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: transparent;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.menu-item:hover {
+  background: rgba(26, 95, 74, 0.08);
+  color: var(--color-primary);
+}
+
+.menu-item.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.home-main {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: auto;
+}
+
+.home-main.home-main-fullscreen {
+  padding: 0;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-main.home-main-fullscreen > * {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.dashboard-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--color-card);
+  padding: 1.25rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.stat-value.highlight {
+  color: var(--color-accent);
+}

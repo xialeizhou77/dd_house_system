@@ -1,0 +1,79 @@
+.house-selection-layout {
+  display: flex;
+  min-height: 400px;
+  background: var(--color-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.house-selection-layout.full-width {
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100%;
+  flex: 1;
+}
+
+.house-selection-layout.full-width .house-selection-content {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.house-selection-sidebar {
+  flex: 0 0 25%;
+  min-width: 200px;
+  border-right: 1px solid #eee;
+  padding: 1rem 0;
+}
+
+.sidebar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0 1rem 0.75rem;
+  color: var(--color-primary);
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
+}
+
+.tree-nav {
+  font-size: 0.9rem;
+}
+
+.tree-node-label,
+.tree-leaf {
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.tree-node-label:hover,
+.tree-leaf:hover {
+  background: rgba(26, 95, 74, 0.06);
+}
+
+.tree-leaf.active {
+  background: rgba(26, 95, 74, 0.1);
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.tree-toggle {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.tree-children {
+  border-left: 1px solid #eee;
+  margin-left: 0.5rem;
+}
+
+.house-selection-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: auto;
+}

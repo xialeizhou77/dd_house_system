@@ -1,0 +1,413 @@
+.building-page {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #0d3d32 0%, #152a24 50%, #0d3d32 100%);
+  color: #fff;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.building-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.5);
+}
+
+.building-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0d875;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  text-shadow: 0 0 2px rgba(240, 216, 117, 0.5);
+}
+
+.btn-end {
+  padding: 0.4rem 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  color: #a8d5ba;
+  border: 1px solid #4a9a85;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.building-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.building-sidebar {
+  flex: 0 0 200px;
+  background: linear-gradient(180deg, #1e3a4a 0%, #0f252e 100%);
+  border-right: 1px solid rgba(74, 154, 133, 0.4);
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.sidebar-block {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #7ec8e3;
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.sidebar-total {
+  margin-bottom: 1rem;
+}
+
+.sidebar-total .label {
+  display: block;
+  font-size: 0.85rem;
+  color: #7ec8e3;
+}
+
+.sidebar-total .value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sidebar-nav {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: #7ec8e3;
+  text-align: center;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sidebar-person {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(126, 200, 227, 0.3);
+}
+
+.sidebar-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.sidebar-row .label {
+  color: #7ec8e3;
+}
+
+.sidebar-row .value {
+  color: #fff;
+}
+
+.round-section {
+  font-size: 0.85rem;
+}
+
+.round-section h4 {
+  color: #7ec8e3;
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.unit-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.75rem;
+}
+
+.unit-table th,
+.unit-table td {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgba(126, 200, 227, 0.3);
+  text-align: left;
+}
+
+.unit-table th {
+  background: rgba(0, 0, 0, 0.2);
+  color: #7ec8e3;
+  font-weight: 500;
+}
+
+.unit-table td {
+  color: #fff;
+}
+
+/* 主内容区 - 全屏铺满 */
+.building-content {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 鸟瞰图 - 与标注页共用 AerialMap.css 的 .aerial-toolbar-shared */
+.aerial-toolbar {
+  /* 尺寸见 AerialMap.css .aerial-toolbar-shared */
+}
+
+.btn-back-block {
+  padding: 0.5rem 1rem;
+  background: #1a4a6e;
+  color: #7ec8e3;
+  border: 1px solid rgba(126, 200, 227, 0.5);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.btn-back-block:hover {
+  background: #2a5a7e;
+}
+
+.aerial-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.aerial-search .search-input {
+  width: 70px;
+  padding: 0.4rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  text-align: center;
+  color: #333;
+}
+
+.aerial-search .search-label {
+  font-size: 0.95rem;
+  color: #f0d875;
+}
+
+.aerial-search .btn-return {
+  padding: 0.4rem 1rem;
+  background: #2d8a6e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+.aerial-search .btn-return:hover {
+  background: #3a9a7e;
+}
+
+/* 与标注页共用 AerialMap.css 的 .aerial-map-area */
+.aerial-view {
+  /* 尺寸见 AerialMap.css .aerial-map-area */
+}
+
+.aerial-map {
+  /* 尺寸与背景由 AerialMap.css 的 .aerial-map-container 统一提供 */
+}
+
+.aerial-building {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.aerial-building--west {
+  background: #c53030;
+  border: 2px solid #e53e3e;
+  box-shadow: 0 2px 8px rgba(197, 48, 48, 0.6);
+}
+
+.aerial-building--west:hover {
+  background: #e53e3e;
+  border-color: #fc8181;
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 4px 12px rgba(197, 48, 48, 0.8);
+}
+
+.aerial-building--east {
+  background: #2563eb;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.6);
+}
+
+.aerial-building--east:hover {
+  background: #3b82f6;
+  border-color: #60a5fa;
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.8);
+}
+
+/* 楼盘详情 */
+.building-detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.building-detail-header {
+  margin-bottom: 1rem;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #7ec8e3;
+  margin-bottom: 0.25rem;
+}
+
+.detail-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f0d875;
+  margin: 0;
+}
+
+.building-detail-main {
+  display: flex;
+  flex: 1;
+  gap: 1.5rem;
+}
+
+.floor-unit-grid {
+  flex: 2;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.floor-unit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.floor-unit-table th,
+.floor-unit-table td {
+  border: 1px solid #ddd;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+}
+
+.floor-unit-table th {
+  background: #2d8a6e;
+  color: white;
+  font-weight: 500;
+}
+
+.floor-unit-table .floor-col {
+  background: #f5f5f5;
+  font-weight: 500;
+  min-width: 50px;
+}
+
+.floor-unit-table .unit-cell {
+  min-width: 55px;
+}
+
+.floor-unit-table .unit-cell.clickable {
+  cursor: pointer;
+  background: #e8f5e9;
+}
+
+.floor-unit-table .unit-cell.clickable:hover {
+  background: #c8e6c9;
+}
+
+.floor-unit-table .unit-cell.selected {
+  background: #2d8a6e !important;
+  color: white !important;
+}
+
+.building-info-panel {
+  flex: 1;
+  min-width: 180px;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, #1a3a32 0%, #0f2520 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(94, 184, 168, 0.4);
+}
+
+.info-row {
+  margin-bottom: 1rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #7ec8e3;
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: #fff;
+}
+
+.building-detail-footer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(94, 184, 168, 0.3);
+}
+
+.btn-reselect {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  background: #1a4a6e;
+  color: #7ec8e3;
+  border: 1px solid rgba(126, 200, 227, 0.5);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.btn-reselect:hover {
+  background: #2a5a7e;
+  color: #a8e6f0;
+}
+
+.btn-return-top {
+  padding: 0.6rem 1.5rem;
+  background: #2d8a6e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.btn-return-top:hover {
+  background: #3a9a7e;
+}
