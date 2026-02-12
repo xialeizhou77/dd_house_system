@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SelectionTimerProvider } from './contexts/SelectionTimerContext';
 import App from './App';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/noto-sans-sc';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
