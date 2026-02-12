@@ -2,15 +2,15 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 
 const colorToRgba = (hex, alpha) => {
-  if (!hex || !hex.startsWith('#')) return `rgba(245, 158, 11, ${alpha})`;
+  if (!hex || !hex.startsWith('#')) return `rgba(99, 102, 241, ${alpha})`;
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-/** KPI 卡片内嵌的迷你折线图（Sparkline） */
-export function SparklineChart({ data, color = '#f59e0b', height = 48 }) {
+/** KPI Sparkline Chart */
+export function SparklineChart({ data, color = '#6366f1', height = 48 }) {
   const option = useMemo(
     () => ({
       grid: { top: 4, right: 4, bottom: 4, left: 4 },
@@ -52,26 +52,26 @@ export function SparklineChart({ data, color = '#f59e0b', height = 48 }) {
   );
 }
 
-/** 历史选房柱状图 - 黑色系 */
+/** History Bar Chart - Dark theme with indigo accent */
 export function HistoryBarChart({ days, values }) {
   const option = useMemo(
     () => ({
       tooltip: {
         trigger: 'axis',
         backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(245, 158, 11, 0.3)',
-        textStyle: { color: '#f8fafc' },
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 24, right: 16, bottom: 40, left: 40 },
       xAxis: {
         type: 'category',
         data: days?.map((d) => d.slice(5)) ?? [],
-        axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.25)' } },
+        axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.2)' } },
         axisLabel: { color: '#94a3b8', fontSize: 11 },
       },
       yAxis: {
         type: 'value',
-        splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.35)', type: 'dashed' } },
+        splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)', type: 'dashed' } },
         axisLine: { show: false },
         axisTick: { show: false },
         axisLabel: { color: '#94a3b8', fontSize: 11 },
@@ -89,13 +89,18 @@ export function HistoryBarChart({ days, values }) {
               y2: 0,
               colorStops: [
                 { offset: 0, color: '#1e293b' },
-                { offset: 0.5, color: '#334155' },
-                { offset: 1, color: '#f59e0b' },
+                { offset: 0.4, color: '#4f46e5' },
+                { offset: 1, color: '#818cf8' },
               ],
             },
             borderRadius: [6, 6, 0, 0],
           },
-          emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(245, 158, 11, 0.5)' } },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 12,
+              shadowColor: 'rgba(99, 102, 241, 0.5)',
+            },
+          },
         },
       ],
     }),
@@ -112,7 +117,7 @@ export function HistoryBarChart({ days, values }) {
   );
 }
 
-/** 各村排行榜 - 横向柱状图 黑色系 */
+/** Village Ranking - Horizontal bar chart */
 export function VillageRankingChart({ data }) {
   const labels = data?.map((d) => d.label) ?? [];
   const values = data?.map((d) => d.selected + d.unselected) ?? [];
@@ -127,8 +132,8 @@ export function VillageRankingChart({ data }) {
           return `${labels[idx]}: ${values[idx]} 套`;
         },
         backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(245, 158, 11, 0.3)',
-        textStyle: { color: '#f8fafc' },
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 12, right: 60, bottom: 12, left: 52 },
       xAxis: {
@@ -156,7 +161,7 @@ export function VillageRankingChart({ data }) {
             itemStyle: {
               color:
                 i < 3
-                  ? ['#f59e0b', '#94a3b8', '#b45309'][i]
+                  ? ['#6366f1', '#94a3b8', '#a78bfa'][i]
                   : {
                       type: 'linear',
                       x: 0,
@@ -197,8 +202,8 @@ export function VillageRankingChart({ data }) {
   );
 }
 
-/** 已选/未选堆叠条形图 - 黑色系 */
-export function StackedBarChart({ data, colors = ['#f59e0b', '#334155'] }) {
+/** Stacked Bar Chart - Selected / Unselected */
+export function StackedBarChart({ data, colors = ['#6366f1', '#1e293b'] }) {
   const labels = data?.map((d) => d.label) ?? [];
   const selected = data?.map((d) => d.selected) ?? [];
   const unselected = data?.map((d) => d.unselected) ?? [];
@@ -214,8 +219,8 @@ export function StackedBarChart({ data, colors = ['#f59e0b', '#334155'] }) {
           return `${labels[idx]}: 已选 ${selected[idx]} / 未选 ${unselected[idx]}`;
         },
         backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        borderColor: 'rgba(245, 158, 11, 0.3)',
-        textStyle: { color: '#f8fafc' },
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
       },
       grid: { top: 12, right: 70, bottom: 12, left: 52 },
       xAxis: { type: 'value', show: false },

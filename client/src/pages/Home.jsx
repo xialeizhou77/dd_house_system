@@ -325,7 +325,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className="kpi-sparkline">
-                      <SparklineChart data={historyDailyTotal} color="#f59e0b" height={52} />
+                      <SparklineChart data={historyDailyTotal} color="#818cf8" height={52} />
                     </div>
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export default function Home() {
                       <div className="kpi-sparkline">
                         <SparklineChart
                           data={card.sparkData}
-                          color={['#f59e0b', '#eab308', '#d97706'][idx]}
+                          color={['#818cf8', '#a78bfa', '#c4b5fd'][idx]}
                           height={52}
                         />
                       </div>
@@ -384,7 +384,7 @@ export default function Home() {
               </section>
               <section className="chart-card dashboard-right chart-card-echarts">
                 <div className="chart-title">各轮次 · 已选 / 未选套数</div>
-                <StackedBarChart data={roundStats} colors={['#eab308', '#334155']} />
+                <StackedBarChart data={roundStats} colors={['#a78bfa', '#1e293b']} />
               </section>
             </div>
           </div>
