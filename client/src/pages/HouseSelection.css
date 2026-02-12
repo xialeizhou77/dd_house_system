@@ -1,15 +1,23 @@
+/* ============================================
+   House Selection Layout - Mobile First
+   ============================================ */
 .house-selection-layout {
   display: flex;
-  min-height: 400px;
-  background: var(--color-card);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
+  flex-direction: column;
+  min-height: 300px;
+  background: rgba(27, 38, 59, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .house-selection-layout.full-width {
   border-radius: 0;
   box-shadow: none;
+  border: none;
   min-height: 100%;
   flex: 1;
 }
@@ -21,34 +29,45 @@
   min-height: 0;
 }
 
+/* ---- Sidebar (mobile: stacked on top) ---- */
 .house-selection-sidebar {
-  flex: 0 0 25%;
-  min-width: 200px;
-  border-right: 1px solid #eee;
-  padding: 1rem 0;
+  flex: 0 0 auto;
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  border-right: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 0;
+  background: transparent;
 }
 
 .sidebar-title {
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0 1rem 0.75rem;
-  color: var(--color-primary);
-  border-bottom: 1px solid #eee;
+  font-family: var(--font-serif);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0 1rem 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
 }
 
+/* ---- Tree Navigation ---- */
 .tree-nav {
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
 }
 
 .tree-node-label,
 .tree-leaf {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1rem;
+  min-height: var(--touch-target-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background 0.2s;
+  transition: all var(--transition-fast);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
 }
 
 .tree-node-icon,
@@ -57,37 +76,79 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
-  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color var(--transition-fast);
 }
 
 .tree-leaf.active .tree-leaf-icon {
-  opacity: 1;
+  color: var(--color-secondary-dark);
 }
 
 .tree-node-label:hover,
 .tree-leaf:hover {
-  background: rgba(26, 95, 74, 0.06);
+  background: rgba(197, 160, 89, 0.15);
+  color: var(--color-secondary);
+}
+
+.tree-node-label:hover .tree-node-icon,
+.tree-leaf:hover .tree-leaf-icon {
+  color: var(--color-secondary);
 }
 
 .tree-leaf.active {
-  background: rgba(26, 95, 74, 0.1);
-  color: var(--color-primary);
-  font-weight: 500;
+  background: rgba(197, 160, 89, 0.2);
+  color: var(--color-secondary);
+  font-weight: 600;
+  border-right: 3px solid var(--color-secondary);
 }
 
 .tree-toggle {
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color var(--transition-fast);
 }
 
 .tree-children {
-  border-left: 1px solid #eee;
-  margin-left: 0.5rem;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.1);
+  margin-left: 1.5rem;
 }
 
+/* ---- Content ---- */
 .house-selection-content {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem;
   overflow: auto;
+  background: transparent;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Desktop: side-by-side */
+@media (min-width: 768px) {
+  .house-selection-layout {
+    flex-direction: row;
+    min-height: 400px;
+    border-radius: var(--radius-lg);
+  }
+  .house-selection-sidebar {
+    flex: 0 0 240px;
+    min-width: 200px;
+    max-height: none;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+    border-bottom: none;
+    padding: 1.25rem 0;
+  }
+  .sidebar-title {
+    font-size: 0.8125rem;
+    padding: 0 1.25rem 0.75rem;
+  }
+  .tree-node-label,
+  .tree-leaf {
+    padding: 0.5rem 1.25rem;
+    min-height: auto;
+  }
+  .house-selection-content {
+    padding: 1.5rem;
+  }
 }
