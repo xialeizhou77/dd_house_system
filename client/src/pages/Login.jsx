@@ -55,8 +55,9 @@ export default function Login() {
             <h2 className="login-title">欢迎登录</h2>
             <p className="login-subtitle">大地集团智能选房系统</p>
 
-            <div className="mt-8 space-y-6">
-              <div className={`login-input-wrap ${username ? 'has-value' : ''}`}>
+            <div className="login-fields">
+              <div className="login-input-wrap">
+                <label htmlFor="login-username" className="login-label">用户名</label>
                 <input
                   id="login-username"
                   type="text"
@@ -65,14 +66,11 @@ export default function Login() {
                   autoComplete="username"
                   required
                   className="login-input"
-                  placeholder=" "
                 />
-                <label htmlFor="login-username" className="login-label">
-                  用户名
-                </label>
               </div>
 
-              <div className={`login-input-wrap ${password ? 'has-value' : ''}`}>
+              <div className="login-input-wrap">
+                <label htmlFor="login-password" className="login-label">密码</label>
                 <input
                   id="login-password"
                   type="password"
@@ -81,11 +79,7 @@ export default function Login() {
                   autoComplete="current-password"
                   required
                   className="login-input"
-                  placeholder=" "
                 />
-                <label htmlFor="login-password" className="login-label">
-                  密码
-                </label>
               </div>
             </div>
 

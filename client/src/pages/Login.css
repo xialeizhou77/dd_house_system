@@ -1,5 +1,5 @@
 /* Login Page - Modern Luxury Design */
-/* Glassmorphism Card + Floating Labels + Champagne Gold */
+/* Glassmorphism Card + Placeholder Inputs + Champagne Gold */
 
 .login-glass-card {
   background: rgba(255, 255, 255, 0.12);
@@ -35,7 +35,34 @@
   font-weight: 400;
 }
 
-/* Floating Label Inputs */
+/* 表单项容器：垂直堆叠，左对齐 */
+.login-fields {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* 单组：label + input 垂直排列 */
+.login-input-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+/* 标签：显示在输入框正上方 */
+.login-label {
+  display: block;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 输入框 */
 .login-input {
   width: 100%;
   padding: 1rem 1rem;
@@ -46,34 +73,22 @@
   border-radius: 10px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  display: block;
 }
 
 .login-input::placeholder {
-  color: transparent;
+  color: rgba(255, 255, 255, 0.65);
+}
+.login-input::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+.login-input::-moz-placeholder {
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .login-input:focus {
   border-color: #C5A059;
   box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.35);
-}
-
-.login-label {
-  position: absolute;
-  left: 1rem;
-  top: 1rem;
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.7);
-  pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: left top;
-  background: transparent;
-}
-
-/* 有内容或聚焦时，标签上浮 */
-.login-input-wrap.has-value .login-label,
-.login-input:focus ~ .login-label {
-  transform: translateY(-1.65rem) scale(0.85);
-  color: #C5A059;
 }
 
 /* CTA Button - Champagne Gold */
