@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useSelectionTimer } from '../contexts/SelectionTimerContext';
 import api from '../api/client';
@@ -14,13 +15,52 @@ import {
 import { selectionData } from '../mock/selectionData';
 import './Home.css';
 
+/** Gold Logo Icon */
+function IconLogoGold() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="logo-icon">
+      <defs>
+        <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#E5C76B" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#B8962E" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+        stroke="url(#logoGold)"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <polyline points="9 22 9 12 15 12 15 22" stroke="url(#logoGold)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const navItems = [
+  { path: '/', label: '首页', icon: HomeIcon },
+  { path: '/house-selection', label: '智能选房', icon: IconHouseSelection },
+  { path: '/annotate', label: '坐标标注', icon: IconMapPin },
+  { path: '#', label: '销控管理', icon: IconChart },
+];
+
+function HomeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 11L12 3l9 8v9h-6v-6H9v6H3z" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
   const [stats, setStats] = useState(null);
   const projectName = 'xx项目';
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     api.get('/stats').then(({ data }) => setStats(data)).catch(() => setStats(null));
@@ -46,7 +86,6 @@ export default function Home() {
 
   const weatherText = '晴 26℃';
 
-  // 基于选房记录 mock 数据的可视化统计
   const allRows = selectionData;
   const allVillages = Array.from(new Set(allRows.map((r) => r.village)));
 
@@ -60,9 +99,8 @@ export default function Home() {
 
   const todayStr = historyDays[historyDays.length - 1];
   const rowsToday = allRows.filter((r) => r.selectDate === todayStr);
-  const todayTotal = rowsToday.length; // 当日总选房数
+  const todayTotal = rowsToday.length;
 
-  // 日同比：与前一日比较
   const yesterdayStr =
     historyDays.length > 1 ? historyDays[historyDays.length - 2] : null;
   const rowsYesterday = yesterdayStr
@@ -72,7 +110,6 @@ export default function Home() {
   const dayChange =
     yesterdayTotal > 0 ? ((todayTotal - yesterdayTotal) / yesterdayTotal) * 100 : null;
 
-  // 不同维度的已选/未选统计（视为任一轮为“已选”）
   const isSelected = (row) =>
     row.firstRound === '已选' || row.secondRound === '已选';
 
@@ -110,20 +147,11 @@ export default function Home() {
     ).length;
     const secondTotal = allRows.length;
     return [
-      {
-        label: '第一轮',
-        selected: firstSelected,
-        unselected: firstTotal - firstSelected,
-      },
-      {
-        label: '第二轮',
-        selected: secondSelected,
-        unselected: secondTotal - secondSelected,
-      },
+      { label: '第一轮', selected: firstSelected, unselected: firstTotal - firstSelected },
+      { label: '第二轮', selected: secondSelected, unselected: secondTotal - secondSelected },
     ];
   }, [allRows]);
 
-  // 各村当日卡片数据，只取 Top3（按当日选房数降序）
   const villageCards = useMemo(
     () => {
       const all = allVillages.map((name) => {
@@ -137,17 +165,6 @@ export default function Home() {
         const yesterday = series.length > 1 ? series[series.length - 2] : 0;
         const change =
           yesterday > 0 ? ((today - yesterday) / yesterday) * 100 : null;
-
-        const max = Math.max(...series, 1);
-        const n = series.length;
-        const sparkPoints = series
-          .map((v, idx) => {
-            const x = n === 1 ? 0 : (idx / (n - 1)) * 100;
-            const y = 40 - (v / max) * 30;
-            return `${x},${y}`;
-          })
-          .join(' ');
-
         return { name, today, change, sparkData: series };
       });
       return all.sort((a, b) => b.today - a.today).slice(0, 3);
@@ -155,7 +172,6 @@ export default function Home() {
     [allVillages, allRows, historyDays],
   );
 
-  // 各村排行榜（按总选房数降序）
   const villageRanking = useMemo(
     () =>
       villageStats
@@ -164,236 +180,270 @@ export default function Home() {
     [villageStats],
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: (i = 0) => ({
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: i * 0.05 },
+    }),
+    exit: { opacity: 0 },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    },
+  };
+
   return (
-    <div className={`home-layout ${headerCollapsed && !timerActive ? 'home-header-collapsed' : ''}`}>
-      {timerActive ? (
+    <div className={`home-layout ${timerActive ? 'layout-with-timer' : ''}`}>
+      {/* Timer bar slot - full width when active */}
+      {timerActive && (
         <div className="home-header-slot home-header-slot--timer">
           <GlobalSelectionTimerBar />
         </div>
-      ) : (
-        <header className="home-header">
+      )}
+
+      <div className="home-layout-body">
+      {/* Floating Glass Sidebar */}
+      <aside
+        className={`home-sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}
+      >
+        <div className="sidebar-inner card-frosted">
           <button
             type="button"
-            className="header-toggle"
-            onClick={() => setHeaderCollapsed((v) => !v)}
-            aria-label={headerCollapsed ? '展开标题栏' : '折叠标题栏'}
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen((v) => !v)}
+            aria-label={sidebarOpen ? '收起侧边栏' : '展开侧边栏'}
           >
-            {headerCollapsed ? (
-              <svg className="toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 12L12 18L18 12" />
-                <path d="M6 6L12 12L18 6" />
+            {sidebarOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 17l-5-5 5-5" />
+                <path d="M18 17l-5-5 5-5" />
               </svg>
             ) : (
-              <svg className="toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 12L12 6L18 12" />
-                <path d="M6 18L12 12L18 18" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 17l5-5-5-5" />
+                <path d="M6 17l5-5-5-5" />
               </svg>
             )}
           </button>
-          <h1 className="home-header-title">大地集团{projectName}智能选房系统</h1>
-          <div className="home-header-right">
-            <div className="header-meta">
-              <span className="header-weather">{weatherText}</span>
-              <span className="header-date">{dateInfo.dateText}</span>
-              <span className="header-week">{dateInfo.weekText}</span>
-            </div>
-            <button
-              className="btn-logout"
-              title="退出登录"
+
+          <div className="sidebar-logo">
+            <IconLogoGold />
+            {sidebarOpen && (
+              <motion.span
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="sidebar-logo-text"
+              >
+                大地{projectName}
+              </motion.span>
+            )}
+          </div>
+
+          <nav className="sidebar-nav">
+            {navItems.map((item) => {
+              const isActive =
+                item.path === '/'
+                  ? location.pathname === '/'
+                  : location.pathname.startsWith(item.path) && item.path !== '#';
+              const Icon = item.icon;
+              return (
+                <motion.button
+                  key={item.path}
+                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => item.path !== '#' && navigate(item.path)}
+                  disabled={item.path === '#'}
+                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="sidebar-nav-icon">
+                    <Icon />
+                  </span>
+                  {sidebarOpen && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="sidebar-nav-label"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="sidebar-nav-indicator"
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                </motion.button>
+              );
+            })}
+          </nav>
+
+          <div className="sidebar-footer">
+            {sidebarOpen && (
+              <div className="sidebar-meta">
+                <span className="sidebar-weather">{weatherText}</span>
+                <span className="sidebar-date">{dateInfo.dateText}</span>
+                <span className="sidebar-week">{dateInfo.weekText}</span>
+              </div>
+            )}
+            <motion.button
+              className="sidebar-logout btn-secondary"
               onClick={() => {
                 logout();
                 navigate('/login');
               }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              title="退出登录"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M14 16l4-4-4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M18 12H10"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 16l4-4-4-4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M18 12H10" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </button>
+              {sidebarOpen && <span>退出</span>}
+            </motion.button>
           </div>
-        </header>
-      )}
+        </div>
+      </aside>
 
-      <nav className="home-menu">
-        {headerCollapsed && (
-          <button
-            type="button"
-            className="menu-expand-trigger"
-            onClick={() => setHeaderCollapsed(false)}
-            aria-label="展开标题栏"
-            title="展开标题栏"
-          >
-            <svg className="toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 12L12 18L18 12" />
-              <path d="M6 6L12 12L18 6" />
-            </svg>
-          </button>
-        )}
-        <button
-          className={`menu-item menu-item-icon ${location.pathname === '/' ? 'active' : ''}`}
-          onClick={() => navigate('/')}
-          title="首页"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 11L12 3l9 8v9h-6v-6H9v6H3z" />
-          </svg>
-        </button>
-        <button
-          className={`menu-item menu-item-icon ${isHouseSelection ? 'active' : ''}`}
-          onClick={() => navigate('/house-selection')}
-          title="智能选房"
-        >
-          <IconHouseSelection />
-          智能选房
-        </button>
-        <button
-          className={`menu-item menu-item-icon ${isAnnotate ? 'active' : ''}`}
-          onClick={() => navigate('/annotate')}
-          title="坐标标注"
-        >
-          <IconMapPin />
-          坐标标注
-        </button>
-        <button className="menu-item menu-item-icon" title="销控管理">
-          <IconChart />
-          销控管理
-        </button>
-      </nav>
-
+      {/* Main Content */}
       <main
-          className={`home-main ${showDashboard ? 'home-main-dashboard' : ''} ${
-            isHouseSelection && !isBuildingPage ? 'home-main-themed' : ''
-          } ${
-            isBuildingPage || isAnnotate ? 'home-main-fullscreen' : ''
-          }`}
-        >
+        className={`home-main ${showDashboard ? 'home-main-dashboard' : ''} ${
+          isHouseSelection && !isBuildingPage ? 'home-main-themed' : ''
+        } ${isBuildingPage || isAnnotate ? 'home-main-fullscreen' : ''}`}
+      >
         {showDashboard ? (
-          <div className="dashboard">
-            <div className="dashboard-header">
+          <motion.div
+            className="dashboard"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className="dashboard-header" variants={itemVariants}>
               <h2 className="dashboard-title">选房数据概览</h2>
               <p className="dashboard-tagline">万家灯火，温暖归家 — 每一套房，点亮一个家庭的幸福</p>
-            </div>
-            <div className="dashboard-grid">
-              <section className="chart-card kpi-card kpi-card-primary">
-                <div className="kpi-card-glow" />
-                <div className="kpi-card-inner">
-                  <div className="kpi-header">
-                    <span className="kpi-icon kpi-icon-home">🏠</span>
+            </motion.div>
+
+            <div className="dashboard-bento">
+              {/* Bento KPI Cards */}
+              <motion.section
+                className="bento-card bento-kpi bento-kpi-primary"
+                variants={itemVariants}
+              >
+                <div className="bento-kpi-glow" />
+                <div className="bento-kpi-inner">
+                  <div className="bento-kpi-header">
+                    <span className="bento-kpi-icon">🏠</span>
                     当日选房数
                   </div>
-                  <div className="kpi-value-row">
-                    <span className="kpi-value">{todayTotal}</span>
-                    <span className="kpi-unit">套</span>
+                  <div className="bento-kpi-value-wrap">
+                    <span className="bento-kpi-value bento-kpi-value-gold">{todayTotal}</span>
+                    <span className="bento-kpi-unit">套</span>
                   </div>
-                  <div className="kpi-footer">
-                    <div className="kpi-change">
-                      <span className="kpi-change-label">日同比</span>
+                  <div className="bento-kpi-footer">
+                    <div className="bento-kpi-change">
+                      <span className="bento-kpi-change-label">日同比</span>
                       {dayChange == null ? (
-                        <span className="kpi-change-value kpi-change-neutral">—</span>
+                        <span className="bento-kpi-change-value neutral">—</span>
                       ) : (
-                        <span
-                          className={`kpi-change-value ${
-                            dayChange >= 0 ? 'kpi-change-up' : 'kpi-change-down'
-                          }`}
-                        >
-                          {dayChange >= 0 ? '▲' : '▼'}
-                          {Math.abs(dayChange).toFixed(1)}%
+                        <span className={`bento-kpi-change-value ${dayChange >= 0 ? 'up' : 'down'}`}>
+                          {dayChange >= 0 ? '▲' : '▼'}{Math.abs(dayChange).toFixed(1)}%
                         </span>
                       )}
                     </div>
-                    <div className="kpi-sparkline">
-                      <SparklineChart data={historyDailyTotal} color="#C5A059" height={52} />
+                    <div className="bento-kpi-chart">
+                      <SparklineChart data={historyDailyTotal} color="#D4AF37" height={52} />
                     </div>
                   </div>
                 </div>
-              </section>
+              </motion.section>
+
               {villageCards.map((card, idx) => (
-                <section key={card.name} className="chart-card kpi-card">
-                  <div className="kpi-card-inner">
-                    <div className="kpi-header">
-                      <span className={`kpi-icon kpi-icon-village kpi-icon-v${idx + 1}`}>
-                        {['📍', '🏘️', '🏡'][idx]}
-                      </span>
-                      {card.name} 当日选房数
+                <motion.section
+                  key={card.name}
+                  className="bento-card bento-kpi"
+                  variants={itemVariants}
+                >
+                  <div className="bento-kpi-inner">
+                    <div className="bento-kpi-header">
+                      <span className="bento-kpi-icon">{['📍', '🏘️', '🏡'][idx]}</span>
+                      {card.name} 当日
                     </div>
-                    <div className="kpi-value-row">
-                      <span className="kpi-value">{card.today}</span>
-                      <span className="kpi-unit">套</span>
+                    <div className="bento-kpi-value-wrap">
+                      <span className="bento-kpi-value bento-kpi-value-gold">{card.today}</span>
+                      <span className="bento-kpi-unit">套</span>
                     </div>
-                    <div className="kpi-footer">
-                      <div className="kpi-change">
-                        <span className="kpi-change-label">日同比</span>
+                    <div className="bento-kpi-footer">
+                      <div className="bento-kpi-change">
+                        <span className="bento-kpi-change-label">日同比</span>
                         {card.change == null ? (
-                          <span className="kpi-change-value kpi-change-neutral">—</span>
+                          <span className="bento-kpi-change-value neutral">—</span>
                         ) : (
-                          <span
-                            className={`kpi-change-value ${
-                              card.change >= 0 ? 'kpi-change-up' : 'kpi-change-down'
-                            }`}
-                          >
-                            {card.change >= 0 ? '▲' : '▼'}
-                            {Math.abs(card.change).toFixed(1)}%
+                          <span className={`bento-kpi-change-value ${card.change >= 0 ? 'up' : 'down'}`}>
+                            {card.change >= 0 ? '▲' : '▼'}{Math.abs(card.change).toFixed(1)}%
                           </span>
                         )}
                       </div>
-                      <div className="kpi-sparkline">
+                      <div className="bento-kpi-chart">
                         <SparklineChart
                           data={card.sparkData}
-                          color={['#C5A059', '#D4B876', '#E8DCC4'][idx]}
+                          color={['#D4AF37', '#E5C76B', '#B8962E'][idx]}
                           height={52}
                         />
                       </div>
                     </div>
                   </div>
-                </section>
+                </motion.section>
               ))}
-              <section className="chart-card dashboard-left chart-card-echarts">
-                <div className="chart-title">历史总选房数</div>
+
+              {/* Chart Cards */}
+              <motion.section
+                className="bento-card bento-chart"
+                variants={itemVariants}
+              >
+                <div className="bento-chart-title">历史总选房数</div>
                 <HistoryBarChart days={historyDays} values={historyDailyTotal} />
-              </section>
-              <section className="chart-card dashboard-right chart-card-echarts">
-                <div className="chart-title">各村排行榜</div>
+              </motion.section>
+
+              <motion.section
+                className="bento-card bento-chart"
+                variants={itemVariants}
+              >
+                <div className="bento-chart-title">各村排行榜</div>
                 <VillageRankingChart data={villageRanking} />
-              </section>
-              <section className="chart-card dashboard-left chart-card-echarts">
-                <div className="chart-title">不同户型 · 已选 / 未选套数</div>
+              </motion.section>
+
+              <motion.section
+                className="bento-card bento-chart"
+                variants={itemVariants}
+              >
+                <div className="bento-chart-title">不同户型 · 已选 / 未选套数</div>
                 <StackedBarChart data={typeStats} />
-              </section>
-              <section className="chart-card dashboard-right chart-card-echarts">
-                <div className="chart-title">各轮次 · 已选 / 未选套数</div>
-                <StackedBarChart data={roundStats} colors={['#C5A059', '#1B263B']} />
-              </section>
+              </motion.section>
+
+              <motion.section
+                className="bento-card bento-chart"
+                variants={itemVariants}
+              >
+                <div className="bento-chart-title">各轮次 · 已选 / 未选套数</div>
+                <StackedBarChart data={roundStats} colors={['rgba(212,175,55,0.8)', 'rgba(30,41,59,0.9)']} />
+              </motion.section>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <Outlet />
         )}
       </main>
+      </div>
     </div>
   );
 }

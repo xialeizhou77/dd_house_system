@@ -2,15 +2,15 @@
 /* Glassmorphism Card + Placeholder Inputs + Champagne Gold */
 
 .login-glass-card {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: 20px;
-  padding: 2.5rem 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2.5rem 2.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow:
-    0 8px 32px 0 rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    0 8px 32px 0 rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .login-form-inner {
@@ -65,11 +65,11 @@
 /* 输入框 */
 .login-input {
   width: 100%;
-  padding: 1rem 1rem;
+  padding: 1rem 1.25rem;
   font-size: 1rem;
   color: #fff;
   background: transparent;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
